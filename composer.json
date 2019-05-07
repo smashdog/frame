@@ -16,9 +16,9 @@
         "files": ["src/init.php"]
     },
     "require": {
-        "php": ">=7.2.0",
+        "php": ">=7.1.0",
         "nikic/fast-route": "^1.3",
-        "illuminate/database": "^5.8.15"
+        "illuminate/database": "^5.8.*"
     },
     "require-dev": {
         "phpunit/phpunit": "^5.7"
