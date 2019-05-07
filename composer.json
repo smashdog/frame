@@ -2,7 +2,7 @@
     "name": "smashdog/frame",
     "description": "a easy frame",
     "keywords": ["sm", "smashdog"],
-    "license": "ANTI 996",
+    "license": "MIT",
     "authors": [
         {
             "name": "smashdog",
