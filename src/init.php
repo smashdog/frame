@@ -1,10 +1,15 @@
 <?php
 
+namespace sm;
+
+echo 1;
 $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
-    $route = include $_SERVER['DOCUMENT_ROOT'].'/route/route.php';
-    foreach ($route as $k => $v) {
-        foreach ($v as $k1 => $v1) {
-            $r->addRoute($k, $k1, $v1);
+    if (file_exists(ROOT.'route/route.php')) {
+        $route = include ROOT.'route/route.php';
+        foreach ($route as $k => $v) {
+            foreach ($v as $k1 => $v1) {
+                $r->addRoute($k, $k1, $v1);
+            }
         }
     }
 });
@@ -14,12 +19,11 @@ $uri = rawurldecode($uri);
 $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
 if (!$routeInfo[0]) {
 } else {
-    $temp = explode('\\', $routeInfo[1]);
-    $str = '';
-    for ($i = 0; $i < count($temp) - 1; ++$i) {
-        $str .= '\\'.$temp[$i];
-    }
-    $class = new $str();
-    $r = $class->$temp[count($temp) - 1]($routeInfo[2]);
-    print_r($r);
+    $temp = explode('/', $routeInfo[1]);
+    $action = $temp[count($temp) - 1];
+    unset($temp[count($temp) - 1]);
+    $classname = implode('/', $temp);
+    $class = new $classname();
+    $r = $class->$action($routeInfo[2]);
+    // print_r($r);
 }
