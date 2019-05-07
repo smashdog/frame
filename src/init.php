@@ -2,7 +2,10 @@
 
 namespace sm;
 
-echo 1;
+if (!defined('ROOT')) {
+    define('ROOT', __DIR__.'/../../../../');
+}
+
 $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
     if (file_exists(ROOT.'route/route.php')) {
         $route = include ROOT.'route/route.php';
@@ -22,8 +25,15 @@ if (!$routeInfo[0]) {
     $temp = explode('/', $routeInfo[1]);
     $action = $temp[count($temp) - 1];
     unset($temp[count($temp) - 1]);
-    $classname = implode('/', $temp);
-    $class = new $classname();
+    $class = $temp[count($temp) - 1];
+    unset($temp[count($temp) - 1]);
+    $path = implode('/', $temp);
+    $namespace = implode('\\', $temp);
+    //自动加载
+    $loader = new \sm\Loader();
+    $loader->addNamespace($namespace, ROOT.$path);
+    $loader->register();
+    $temp1 = '\\'.$namespace.'\\'.$class;
+    $class = new $temp1();
     $r = $class->$action($routeInfo[2]);
-    // print_r($r);
 }
