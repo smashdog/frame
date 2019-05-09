@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title></title>
+        <title>错误页</title>
     </head>
     <body>
         <header>错误页</header>
