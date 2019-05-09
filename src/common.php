@@ -196,11 +196,11 @@ if (!function_exists('config')) {
     }
 }
 
-if (!function_exists('spf')) {
-    function spf($params = null)
+if (!function_exists('p')) {
+    function p($params = null, $func = 'print_r')
     {
         ob_start();
-        print_r($params);
+        $func($params);
         $str = ob_get_contents();
         ob_end_clean();
 
