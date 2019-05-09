@@ -4,7 +4,7 @@ if (!function_exists('init_frame')) {
     /**
      * 初始化框架.
      */
-    function init_frame()
+    function init_frame($request = null)
     {
         $dispatcher = \FastRoute\simpleDispatcher(function (\FastRoute\RouteCollector $r) {
             if (file_exists(ROOT.'route/route.php')) {
@@ -16,17 +16,22 @@ if (!function_exists('init_frame')) {
                 }
             }
         });
-        $httpMethod = $_SERVER['REQUEST_METHOD'];
-        $uri = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : config('app.default_route');
+        $is_swoole = defined('SWOOLE');
+        if (!$is_swoole) {
+            $httpMethod = $_SERVER['REQUEST_METHOD'];
+            $uri = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : config('app.default_route');
+        } else {
+            $httpMethod = $request->server['request_method'];
+            $uri = isset($request->server['path_info']) ? $request->server['path_info'] : config('app.default_route');
+        }
         $uri = rawurldecode($uri);
         $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
         if (!$routeInfo[0]) {
             $data = [
                 'msg' => 404,
             ];
-            show_view($data, 404);
 
-            return false;
+            return show_view($data, 404);
         } else {
             $app_path = config('app.app_path');
             $temp = explode('/', $routeInfo[1]);
@@ -55,9 +60,8 @@ if (!function_exists('init_frame')) {
                 $data = [
                     'msg' => '路径不存在',
                 ];
-                show_view($data, 404);
 
-                return false;
+                return show_view($data, 404);
             }
             $class = new $temp1();
 
@@ -65,13 +69,12 @@ if (!function_exists('init_frame')) {
                 $data = [
                     'msg' => '方法不存在',
                 ];
-                show_view($data, 404);
 
-                return false;
+                return show_view($data, 404);
             }
             $r = $class->$action($routeInfo[2]);
 
-            return true;
+            return $r;
         }
     }
 }
@@ -104,13 +107,22 @@ if (!function_exists('show_view')) {
      */
     function show_view($data = ['msg' => 404], $status = 100, $page = 'views/message.php')
     {
+        ob_start();
         if (is_ajax()) {
             echo json_encode(['status' => $status, 'data' => $data]);
         } else {
             include $page;
         }
+        if (defined('SWOOLE')) {
+            $str = ob_get_contents();
+            ob_end_clean();
 
-        return true;
+            return $str;
+        } else {
+            ob_end_flush();
+
+            return true;
+        }
     }
 }
 
@@ -163,7 +175,10 @@ if (!function_exists('config')) {
             $files = scandir(ROOT.'config');
             foreach ($files as $v) {
                 if (preg_match('/\.php$/', $v)) {
-                    $arr[str_replace('.php', '', $v)] = $arr[str_replace('.php', '', $v)] ? array_merge($arr[str_replace('.php', '', $v)], include ROOT.'config/'.$v) : include ROOT.'config/'.$v;
+                    $arr[str_replace('.php', '', $v)] =
+                        isset($arr[str_replace('.php', '', $v)]) ?
+                        array_merge($arr[str_replace('.php', '', $v)], include ROOT.'config/'.$v) :
+                        include ROOT.'config/'.$v;
                 }
             }
         }
@@ -178,5 +193,17 @@ if (!function_exists('config')) {
         }
 
         return $conf;
+    }
+}
+
+if (!function_exists('spf')) {
+    function spf($params = null)
+    {
+        ob_start();
+        print_r($params);
+        $str = ob_get_contents();
+        ob_end_clean();
+
+        return $str;
     }
 }

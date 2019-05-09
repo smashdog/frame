@@ -5,4 +5,4 @@ if (!defined('ROOT')) {
 }
 require 'common.php';
 
-init_frame();
+ob_start();
