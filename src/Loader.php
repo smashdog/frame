@@ -2,23 +2,6 @@
 
 namespace sm;
 
-/**
- * 下面这个例子实现了一个命名空间前缀对应多个基础目录.
- *
- * 现在我们的目录结构是下面这样：
- *
- *     /demo/autoload/
- *          controller/
- *             DemoController.php              # Foo\Bar\DemoController
- *             Admin/
- *                 AdminController.php         # Foo\Bar\Admin\AdminController
- *          model/
- *             DemoModel.php                   # Foo\Bar\DemoModel
- *             Admin/
- *                 AdminModel.php              # Foo\Bar\Admin\AdminModel
- *
- * Foo\Bar分别对应基础路径 /demo/autoload/controller 和 /demo/autoload/model
- */
 class Loader
 {
     /**
