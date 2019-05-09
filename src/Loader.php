@@ -9,14 +9,14 @@ class Loader
      *
      * @var array
      */
-    protected $prefixes = array();
+    protected $prefixes = [];
 
     /**
      * 封装自动加载函数.
      */
     public function register()
     {
-        spl_autoload_register(array($this, 'loadClass'));
+        spl_autoload_register([$this, 'loadClass']);
     }
 
     /**
@@ -36,7 +36,7 @@ class Loader
 
         // 初始化数组
         if (isset($this->prefixes[$prefix]) === false) {
-            $this->prefixes[$prefix] = array();
+            $this->prefixes[$prefix] = [];
         }
 
         // 将命名空间前缀和基础路径存入数组
@@ -96,9 +96,7 @@ class Loader
         // 将数组中所有的基础路径中的文件包含进来
         foreach ($this->prefixes[$prefix] as $base_dir) {
             // 拼接文件绝对路径
-            $file = $base_dir
-                .str_replace('\\', '/', $relative_class)
-                .'.php';
+            $file = $base_dir.str_replace('\\', '/', $relative_class).'.php';
 
             // 如果文件存在则包含进来
             if ($this->requireFile($file)) {
