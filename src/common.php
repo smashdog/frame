@@ -26,56 +26,56 @@ if (!function_exists('init_frame')) {
         }
         $uri = rawurldecode($uri);
         $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
-        if (!$routeInfo[0]) {
+        switch ($routeInfo[0]) {
+            case \FastRoute\Dispatcher::NOT_FOUND:
+            case \FastRoute\Dispatcher::METHOD_NOT_ALLOWED:
             $data = [
                 'msg' => 404,
             ];
+            return show_view($data, 404);
+        }
+        $app_path = config('app.app_path');
+        $temp = explode('/', $routeInfo[1]);
+        $action = $temp[count($temp) - 1];
+        unset($temp[count($temp) - 1]);
+        $classname = ucfirst($temp[count($temp) - 1]);
+        unset($temp[count($temp) - 1]);
+        $path = implode('/', $temp);
+        $namespace = implode('\\', $temp);
+
+        //注册自动加载
+        $loader = new \sm\Loader();
+        $pathlist = config('app.pathlist');
+        foreach ($pathlist as $v) {
+            $loader->addNamespace($app_path.'\\'.$namespace.'\\'.$v, ROOT.$app_path.'/'.$path.'/'.$v);
+        }
+        $loader->register();
+
+        //过滤xss攻击
+        foreach ($routeInfo[2] as $k => $v) {
+            $routeInfo[2][$k] = htmlspecialchars($v);
+        }
+
+        $temp1 = '\\'.$app_path.'\\'.$namespace.'\\controller\\'.$classname;
+        if (!file_exists(ROOT.$app_path.'/'.$path.'/controller/'.$classname.'.php')) {
+            $data = [
+                'msg' => '路径不存在',
+            ];
 
             return show_view($data, 404);
-        } else {
-            $app_path = config('app.app_path');
-            $temp = explode('/', $routeInfo[1]);
-            $action = $temp[count($temp) - 1];
-            unset($temp[count($temp) - 1]);
-            $classname = ucfirst($temp[count($temp) - 1]);
-            unset($temp[count($temp) - 1]);
-            $path = implode('/', $temp);
-            $namespace = implode('\\', $temp);
-
-            //注册自动加载
-            $loader = new \sm\Loader();
-            $pathlist = config('app.pathlist');
-            foreach ($pathlist as $v) {
-                $loader->addNamespace($app_path.'\\'.$namespace.'\\'.$v, ROOT.$app_path.'/'.$path.'/'.$v);
-            }
-            $loader->register();
-
-            //过滤xss攻击
-            foreach ($routeInfo[2] as $k => $v) {
-                $routeInfo[2][$k] = htmlspecialchars($v);
-            }
-
-            $temp1 = '\\'.$app_path.'\\'.$namespace.'\\controller\\'.$classname;
-            if (!file_exists(ROOT.$app_path.'/'.$path.'/controller/'.$classname.'.php')) {
-                $data = [
-                    'msg' => '路径不存在',
-                ];
-
-                return show_view($data, 404);
-            }
-            $class = new $temp1();
-
-            if (!method_exists($class, $action)) {
-                $data = [
-                    'msg' => '方法不存在',
-                ];
-
-                return show_view($data, 404);
-            }
-            $r = $class->$action($routeInfo[2]);
-
-            return $r;
         }
+        $class = new $temp1();
+
+        if (!method_exists($class, $action)) {
+            $data = [
+                'msg' => '方法不存在',
+            ];
+
+            return show_view($data, 404);
+        }
+        $r = $class->$action($routeInfo[2]);
+
+        return $r;
     }
 }
 
