@@ -32,6 +32,7 @@ if (!function_exists('init_frame')) {
             $data = [
                 'msg' => 404,
             ];
+
             return show_view($data, 404);
         }
         $app_path = config('app.app_path');
@@ -46,8 +47,16 @@ if (!function_exists('init_frame')) {
         //注册自动加载
         $loader = new \sm\Loader();
         $pathlist = config('app.pathlist');
+        $dirList = scandir(ROOT.$app_path);
+        foreach($dirList as $k => $v){
+            if($v == '.' || $v == '..'){
+                unset($dirList[$k]);
+            }
+        }
         foreach ($pathlist as $v) {
-            $loader->addNamespace($app_path.'\\'.$namespace.'\\'.$v, ROOT.$app_path.'/'.$path.'/'.$v);
+            foreach($dirList as $v1){
+                $loader->addNamespace($app_path.'\\'.$v1.'\\'.$v, ROOT.$app_path.'/'.$v1.'/'.$v);
+            }
         }
         $loader->register();
 
@@ -73,6 +82,7 @@ if (!function_exists('init_frame')) {
 
             return show_view($data, 404);
         }
+        print_r($routeInfo);
         $r = $class->$action($routeInfo[2]);
 
         return $r;
