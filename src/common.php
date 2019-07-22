@@ -82,7 +82,6 @@ if (!function_exists('init_frame')) {
 
             return show_view($data, 404);
         }
-        print_r($routeInfo);
         $r = $class->$action($routeInfo[2]);
 
         return $r;
