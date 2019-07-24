@@ -48,21 +48,27 @@ if (!function_exists('init_frame')) {
         $loader = new \sm\Loader();
         $pathlist = config('app.pathlist');
         $dirList = scandir(ROOT.$app_path);
-        foreach($dirList as $k => $v){
-            if($v == '.' || $v == '..'){
+        foreach ($dirList as $k => $v) {
+            if ($v == '.' || $v == '..') {
                 unset($dirList[$k]);
             }
         }
         foreach ($pathlist as $v) {
-            foreach($dirList as $v1){
+            foreach ($dirList as $v1) {
                 $loader->addNamespace($app_path.'\\'.$v1.'\\'.$v, ROOT.$app_path.'/'.$v1.'/'.$v);
             }
         }
         $loader->register();
-
         //过滤xss攻击
+        $routeInfo[2] = array_merge($routeInfo[2], $_POST);
         foreach ($routeInfo[2] as $k => $v) {
-            $routeInfo[2][$k] = htmlspecialchars($v);
+            if(!is_array($v)){
+                $routeInfo[2][$k] = htmlspecialchars($v);
+            }else{
+                foreach($v as $k1 => $v1){
+                    $routeInfo[2][$k][$k1] = htmlspecialchars($v1);
+                }
+            }
         }
 
         $temp1 = '\\'.$app_path.'\\'.$namespace.'\\controller\\'.$classname;
